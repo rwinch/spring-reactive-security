@@ -23,26 +23,20 @@ public class AuthenticationFilter implements WebFilter {
 
 	@Override
 	public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
+		System.out.println(Thread.currentThread().getName() + " " + exchange.getRequest().getURI());
 		return tokenFactory.createToken(exchange)
 			.then( token -> {
-				return authenticationManager.authenticate(token)
-					.then(authentication -> {
-						SecurityContext context = new SecurityContextImpl();
-						context.setAuthentication(authentication);
-						return securityContextRepository
-							.save(exchange, context)
-							.after( () ->{
-								return chain.filter(exchange);
-							});
-					})
-					.otherwise( t -> {
-						if(t instanceof AuthenticationException) {
-							return entryPoint.commence(exchange, (AuthenticationException) t);
-						}
-						return Mono.error(t);
+				System.out.println(Thread.currentThread().getName() + "================== Filter received NOT empty");
+				SecurityContext context = new SecurityContextImpl();
+				context.setAuthentication(token);
+				return securityContextRepository
+					.save(exchange, context)
+					.after( () ->{
+						return chain.filter(exchange);
 					});
 			})
 			.otherwiseIfEmpty(Mono.defer(() -> {
+				System.out.println(Thread.currentThread().getName() + "================== Filter received empty");
 				return chain.filter(exchange);
 			}));
 	}

@@ -157,7 +157,7 @@ public class Application {
 		return new PropertySourcesPlaceholderConfigurer();
 	}
 
-	@Bean
+//	@Bean
 	public AuthorizationFilter authorizationFilter() {
 		return new AuthorizationFilter();
 	}

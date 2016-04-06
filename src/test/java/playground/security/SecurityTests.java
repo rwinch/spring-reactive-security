@@ -39,14 +39,6 @@ public class SecurityTests extends AbstractHttpHandlerIntegrationTests {
 		return Application.createHttpHandler();
 	}
 
-	@Test
-	public void basicRequired() throws Exception {
-		Mono<ResponseEntity<String>> response = this.webClient
-				.perform(peopleRequest())
-				.extract(response(String.class));
-
-		assertThat(response.get().getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
-	}
 
 	@Test
 	public void basicWorks() throws Exception {
@@ -55,58 +47,6 @@ public class SecurityTests extends AbstractHttpHandlerIntegrationTests {
 				.extract(response(Map.class));
 
 		assertThat(response.get().getStatusCode()).isEqualTo(HttpStatus.OK);
-	}
-
-	@Test
-	public void basicMissingUser401() throws Exception {
-		Mono<ResponseEntity<Map>> response = this.webClient
-				.perform(peopleRequest().with(httpBasic("missing-user","rob")))
-				.extract(response(Map.class));
-
-		assertThat(response.get().getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
-	}
-
-	@Test
-	public void basicInvalidPassword401() throws Exception {
-		Mono<ResponseEntity<Map>> response = this.webClient
-				.perform(peopleRequest().with(httpBasic("rob","invalid")))
-				.extract(response(Map.class));
-
-		assertThat(response.get().getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
-	}
-
-	@Test
-	public void basicInvalidParts401() throws Exception {
-		Mono<ResponseEntity<Map>> response = this.webClient
-				.perform(peopleRequest().header("Authorization", "Basic " + base64Encode("no colon")))
-				.extract(response(Map.class));
-
-		assertThat(response.get().getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
-	}
-
-	@Test
-	public void sessionWorks() throws Exception {
-		Mono<ResponseEntity<Map>> response = this.webClient
-				.perform(peopleRequest().with(robsCredentials()))
-				.extract(response(Map.class));
-
-		String session = response.get().getHeaders().getFirst("Set-Cookie");
-
-		response = this.webClient
-				.perform(peopleRequest().header("Cookie", session))
-				.extract(response(Map.class));
-
-		assertThat(response.get().getStatusCode()).isEqualTo(HttpStatus.OK);
-	}
-
-	@SuppressWarnings("unchecked")
-	@Test
-	public void me() throws Exception {
-		Mono<ResponseEntity<Map>> response = this.webClient
-				.perform(meRequest().with(robsCredentials()))
-				.extract(response(Map.class));
-
-		assertThat(response.get().getBody()).hasSize(1).containsEntry("username", "rob");
 	}
 
 	private RequestPostProcessor robsCredentials() {

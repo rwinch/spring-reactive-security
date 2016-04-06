@@ -16,8 +16,11 @@ public class HttpBasicAuthenticationFactory implements AuthenticationFactory<Ser
 		ServerHttpRequest request = exchange.getRequest();
 		String authorization = request.getHeaders().getFirst("Authorization");
 		if(authorization == null) {
+			System.out.println(Thread.currentThread().getName() + "================== Sending empty");
 			return Mono.empty();
 		}
+
+		System.out.println(Thread.currentThread().getName() + "==================  got the header");
 
 		String credentials = authorization.substring("Basic ".length(), authorization.length());
 		byte[] decodedCredentials = Base64.getDecoder().decode(credentials);
@@ -25,12 +28,16 @@ public class HttpBasicAuthenticationFactory implements AuthenticationFactory<Ser
 		String[] userParts = decodedAuthz.split(":");
 
 		if(userParts.length != 2) {
+			System.out.println(Thread.currentThread().getName() + "================== Sending empty");
 			return Mono.empty();
 		}
+
+		System.out.println(Thread.currentThread().getName() + "==================  got valid parts");
 
 		String username = userParts[0];
 		String password = userParts[1];
 
+		System.out.println(Thread.currentThread().getName() + "================== Sending NOT EMPTY");
 		return Mono.just(new UsernamePasswordAuthenticationToken(username, password));
 	}
 }
